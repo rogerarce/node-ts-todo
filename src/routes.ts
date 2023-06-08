@@ -1,6 +1,8 @@
 import { Express, Response, Request } from "express";
 import jwt from "jsonwebtoken";
 import jwtauth from "./middleware/auth";
+import { success, HttpResponses } from "./utils/response";
+import { create, get, update, remove } from "./services/todos.service";
 
 const env = process.env;
 
@@ -24,25 +26,35 @@ export const register = (app: Express) => {
 	});
 
 	// protected routes
-	app.get("/api/todo", jwtauth, (_, res: Response) => {
-		res.send("from todo route");
+	app.get("/api/todo", jwtauth, async (_, res: Response) => {
+		const todos = await get();
+		
+		res.json(success(HttpResponses.OK, todos));
 	});
 
-	app.get("/api/todo/:id", jwtauth, (_: Request, res: Response) => {
-		res.send("get single todo");
+	app.get("/api/todo/:id", jwtauth, async (req: Request, res: Response) => {
+		const todo = await get(req.params.id);
+
+		res.json(success(HttpResponses.OK, todo));
 	});
 
-	app.post("/api/todo", jwtauth, (req: Request, res: Response) => {
+	app.post("/api/todo", jwtauth, async (req: Request, res: Response) => {
 		const body = req.body;
 
-		res.json(body).status(200);
+		const todo = await create(body);
+
+		res.json(success(HttpResponses.OK, todo)).status(200);
 	});
 
-	app.delete("/api/todo/:id", jwtauth, (_: Request, res: Response) => {
-		res.send("Delete success!");
+	app.delete("/api/todo/:id", jwtauth, async (req: Request, res: Response) => {
+		await remove(req.params.id);
+
+		res.json(success(HttpResponses.OK, "Success deleting todo"));
 	});
 
-	app.put("/api/todo", jwtauth, (_: Request, res: Response) => {
-		res.send("Update success!");
+	app.put("/api/todo", jwtauth, async (req: Request, res: Response) => {
+		const updated = await update(req.params.id, req.body);
+
+		res.json(success(HttpResponses.OK, "Update success"));
 	});
 }

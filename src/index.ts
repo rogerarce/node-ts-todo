@@ -16,11 +16,11 @@ app.get('/', function(_, res: Response) {
 
 routes.register( app );
 
-app.use((req, res) => {
+app.use((_, res: Response) => {
 	res.status(404).send("not found!");
 });
 
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((error: Error, req: Request, res: Response, _: NextFunction) => {
 	/** Catch All Errors */
 	res.status(500).send(error.message);
 });
